@@ -21,7 +21,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilos CSS de Alto Contraste con temática Smart Home / Neon IoT
+# Estilos CSS de Alto Contraste con tematización específica para Bokeh
 st.markdown("""
 <style>
     /* Estructura Global en Modo Oscuro Elegante */
@@ -54,7 +54,7 @@ st.markdown("""
         margin: 0;
     }
 
-    /* Estado del Sistema (Nielsen #1: Visibilidad del Estado) */
+    /* Estado del Sistema */
     .status-badge {
         display: inline-flex;
         align-items: center;
@@ -78,37 +78,36 @@ st.markdown("""
         box-shadow: 0 0 8px #22C55E;
     }
 
-    /* Cards de Control */
-    .control-card {
-        background-color: #1E293B;
-        border: 1px solid #334155;
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    /* OVERRIDE COMPLETO PARA EL BOTÓN Y CONTENEDOR BOKEH */
+    div[data-testid="stBokehChart"], .bk-root, .bk {
+        background-color: transparent !important;
     }
 
-    /* Ajustes para los componentes Bokeh */
-    .bk-btn-default {
-        background-color: #4F46E5 !important;
+    .bk-btn, button.bk-btn-default {
+        background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
         color: #FFFFFF !important;
         border: none !important;
         font-weight: 700 !important;
         font-size: 1rem !important;
         border-radius: 12px !important;
         padding: 0.8rem 1.5rem !important;
-        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4) !important;
-        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4) !important;
+        transition: all 0.2s ease-in-out !important;
+        cursor: pointer !important;
+        width: 100% !important;
     }
 
-    .bk-btn-default:hover {
-        background-color: #4338CA !important;
-        transform: translateY(-2px);
+    .bk-btn:hover, button.bk-btn-default:hover {
+        background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%) !important;
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6) !important;
+        transform: translateY(-2px) !important;
+        color: #FFFFFF !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# FUNCIONES MQTT ORIGINALES (SIN ALTERAR)
+# FUNCIONES MQTT ORIGINALES
 # ==========================================
 def on_publish(client, userdata, result):
     print("el dato ha sido publicado \n")
@@ -126,7 +125,7 @@ client1 = paho.Client("Sebaastiann")
 client1.on_message = on_message
 
 # ==========================================
-# BARRA LATERAL (MONITOR IoT)
+# BARRA LATERAL
 # ==========================================
 with st.sidebar:
     st.markdown("## 🏡 AuraHome Hub")
@@ -139,7 +138,7 @@ with st.sidebar:
     
     st.markdown("---")
     
-    st.subheader("💡 Atajos de Comando Recomendados")
+    st.subheader("💡 Atajos de Comando")
     st.markdown("""
     * *"Encender luces de la sala"*
     * *"Apagar aire acondicionado"*
@@ -157,7 +156,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Indicador de estado
 st.markdown("""
 <div class="status-badge">
     <span class="status-dot"></span> Broker MQTT Activo & Listo para Conectar
@@ -172,7 +170,6 @@ with col1:
         image = Image.open('voice_ctrl.jpg')
         st.image(image, width=220, caption="Asistente de Voz Inteligente")
     except Exception:
-        # Respaldo visual si no se encuentra la imagen local
         st.image(
             "https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=500&q=80",
             width=280,
@@ -183,8 +180,8 @@ with col2:
     st.subheader("🎙️ Centro de Comandos por Voz")
     st.write("Presiona el botón e indica la acción requerida para tu hogar:")
 
-    # Botón Bokeh Original
-    stt_button = Button(label="🎙️ Iniciar Reconocimiento", width=220)
+    # Botón Bokeh Ajustado
+    stt_button = Button(label="🎙️ Iniciar Reconocimiento", width=260)
 
     stt_button.js_on_event("button_click", CustomJS(code="""
         var recognition = new webkitSpeechRecognition();
@@ -210,16 +207,14 @@ with col2:
         events="GET_TEXT",
         key="listen",
         refresh_on_update=False,
-        override_height=75,
+        override_height=65,
         debounce_time=0
     )
 
-    # Lógica Original de MQTT y creación de carpeta temp
     if result:
         if "GET_TEXT" in result:
             texto_capturado = result.get("GET_TEXT")
             
-            # Notificación visual clara (Nielsen #3: Control del usuario y realimentación)
             st.success(f"🗣️ Comando detectado: **\"{texto_capturado}\"**")
             
             client1.on_publish = on_publish                           
